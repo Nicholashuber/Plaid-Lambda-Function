@@ -1,0 +1,37 @@
+<button id="linkButton">Open Plaid Link</button>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+  var linkHandler = Plaid.create({
+  env: 'sandbox',
+  clientName: 'Plaid Test',
+  key: 'PUBLIC_KEY',
+  product: ['auth'],
+  selectAccount: true,
+  onSuccess: function(public_token, metadata) {
+    console.log('public_token: ' + public_token);
+    console.log('metadata: ' + JSON.stringify(metadata));
+
+    // Send the public_token and account ID to your app server.
+    var $form = $('<form>', {
+      'action': 'https://apigateway.execute-api.us-east-1.amazonaws.com/yourstagename',
+      'method': 'POST'
+    }).append($('<input>', {
+      'name': 'public_token',
+      'value': public_token,
+      'type': 'hidden'
+    })).append($('<input>', {
+      'name': 'account_id',
+      'value': metadata.account.id,
+      'type': 'hidden'
+    }));
+    $(document.body).append($form);
+    $form.submit();
+  },
+});
+
+// Trigger the Link UI
+$("#linkButton").click(function() {
+  linkHandler.open();
+});
+</script>
